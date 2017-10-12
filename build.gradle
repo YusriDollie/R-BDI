@@ -1,0 +1,81 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+// This points to the main class in qcog
+
+mainClassName = 'Network_Interface.Main'
+
+
+def setMainClass() {
+    if (project.hasProperty("pcog")) {
+        mainClassName = "pcog.PCog"
+    } else if (project.hasProperty("bcog")) {
+        mainClassName = "jadexagent.Main"
+    }else if (project.hasProperty("bdi")) {
+        mainClassName = "plainBDI.Main"
+    } else if (project.hasProperty("random")) {
+        mainClassName = "Agents.RandomAgent"
+    } else if (project.hasProperty("qcog")) {
+        mainClassName = "main.Main"
+    } else if (project.hasProperty("wm")) {
+        mainClassName = "CustomArchitecture.WorkingMemory"
+    } else if (project.hasProperty("statichcog")) {
+        mainClassName = "hcog.StaticHCog"
+    }
+}
+
+run {
+    if (project.hasProperty("port")) {
+        args port
+    }
+    setMainClass()
+}
+
+build {
+    setMainClass()
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+            srcDir 'qcog'
+        }
+        resources {
+            srcDir 'qcog/resources'
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+jar {
+
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+        configurations.runtime.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'deps', include: ['*.jar'])
+    compile 'org.activecomponents.jadex:jadex-distribution-standard:3.0.69'
+
+    compile group: 'edu.brown.cs.burlap', name: 'burlap', version: '3.0.0'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.7.5'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.7.5'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.7.5'
+}
